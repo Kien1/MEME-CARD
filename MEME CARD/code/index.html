@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gacha Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        #coins-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #lobby-container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 100px;
+            display: none; /* Ẩn phần Sảnh ban đầu */
+        }
+
+        .game-box {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            color: #555;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #collection-container {
+            display: none;
+            margin-top: 50px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #collection-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .item-box {
+            width: 150px;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-box img {
+            width: 100px;       /* Chiều rộng cố định */
+            height: 100px;      /* Chiều cao cố định */
+            object-fit: contain; /* Đảm bảo hình ảnh vừa với không gian mà không bị bóp méo */
+            max-width: 100%;    /* Giới hạn kích thước tối đa là 100% */
+            max-height: 100%;   /* Giới hạn chiều cao tối đa là 100% */
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        #result-item img, #result-trap img {
+            width: 150px;         /* Chiều rộng cố định cho hình ảnh trong Gacha */
+            height: 150px;        /* Chiều cao cố định cho hình ảnh trong Gacha */
+            object-fit: contain;  /* Đảm bảo hình ảnh không bị bóp méo */
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .highlight {
+            border: 3px solid gold;
+            box-shadow: 0 0 10px gold;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            #coins-display {
+                font-size: 16px;
+                padding: 8px 15px;
+            }
+
+            #lobby-container {
+                flex-direction: column;
+                gap: 20px;
+                margin-top: 50px;
+            }
+
+            .game-box {
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            #collection-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .item-box {
+                width: 100%;
+                max-width: 120px;
+                margin: 0 auto;
+            }
+
+            .item-box img {
+                width: 80px;
+                height: 80px;
+            }
+
+            #result-item img,
+            #result-trap img {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 12px;
+            }
+
+            h1,
+            h2 {
+                font-size: 18px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 8px 15px;
+            }
+
+            #coins-display {
+                font-size: 14px;
+                padding: 5px 10px;
+            }
+
+            #lobby-container {
+                gap: 15px;
+            }
+
+            .game-box {
+                max-width: 250px;
+            }
+
+            .item-box img {
+                width: 70px;
+                height: 70px;
+            }
+
+            #result-item img,
+            #result-trap img {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="coins-display">Xu: <span id="coins">100</span></div>
+
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" style="margin-top: 100px;">
+        <h1>Chào mừng đến với Sảnh Gacha</h1>
+        <p>Nhấn nút dưới đây để vào sảnh và xem bộ sưu tập của bạn!</p>
+        <button onclick="enterLobby()">Vào Sảnh</button>
+        <br><br>
+        <button onclick="enterCollection()">Xem Bộ Sưu Tập</button>
+        <br><br>
+    </div>
+
+    <!-- Lobby Section -->
+    <div id="lobby-container">
+        <div class="game-box">
+            <h2>Sảnh Gacha</h2>
+            <p>Quay để nhận vật phẩm</p>
+            <button id="item-button" onclick="rollGacha('item')">Quay Gacha (10 Xu)</button>
+            <div id="result-item"></div>
+        </div>
+
+        <div class="game-box">
+            <h2>Sảnh Thẻ Bẫy</h2>
+            <p>Quay để nhận thẻ bẫy</p>
+            <button id="trap-button" onclick="rollGacha('trap')">Quay Gacha (10 Xu)</button>
+            <div id="result-trap"></div>
+        </div>
+
+        <button class="back-button" onclick="backToWelcome()">Quay lại Sảnh</button> <!-- Thêm nút quay lại sảnh dưới cả 2 phần Gacha -->
+    </div>
+
+    <!-- Collection Section -->
+    <div id="collection-container">
+        <h2>Bộ Sưu Tập</h2>
+        <div id="collection-content"></div>
+        <button class="back-button" onclick="backToWelcome()">Quay lại Sảnh</button>
+        <button class="reset-button" onclick="resetCollection()">Reset Bộ Sưu Tập</button>
+    </div>
+
+    <script>
+        let coins = 100;
+        const items = [
+            { name: "⭐ Common Item", image: "Genaral/bb782fa7fc70412e1861.jpg", chance: 50, id: "item-common" },
+            { name: "⭐⭐ Rare Item", image: "images/rare-item.jpg", chance: 30, id: "item-rare" },
+            { name: "⭐⭐⭐ Epic Item", image: "images/epic-item.jpg", chance: 15, id: "item-epic" },
+            { name: "⭐⭐⭐⭐ Legendary Item", image: "images/legendary-item.jpg", chance: 5, id: "item-legendary" }
+        ];
+
+        const traps = [
+            { name: "Trap Card A", image: "images/trap-a.jpg", chance: 40, id: "trap-a" },
+            { name: "Trap Card B", image: "images/trap-b.jpg", chance: 35, id: "trap-b" },
+            { name: "Trap Card C", image: "images/trap-c.jpg", chance: 20, id: "trap-c" },
+            { name: "Trap Card D", image: "images/trap-d.jpg", chance: 5, id: "trap-d" }
+        ];
+
+        function updateCoinsDisplay() {
+            document.getElementById('coins').textContent = coins;
+        }
+
+        function enterLobby() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('lobby-container').style.display = 'flex';  // Hiển thị phần Sảnh
+        }
+
+        function enterCollection() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('lobby-container').style.display = 'none';  // Ẩn phần Sảnh
+            document.getElementById('collection-container').style.display = 'block';  // Hiển thị phần Bộ Sưu Tập
+            loadCollection();
+        }
+
+        function backToWelcome() {
+            document.getElementById('collection-container').style.display = 'none';  // Ẩn Bộ Sưu Tập
+            document.getElementById('lobby-container').style.display = 'none';  // Ẩn Sảnh Gacha
+            document.getElementById('welcome-screen').style.display = 'block';  // Hiển thị lại màn hình chào mừng
+        }
+
+        function resetCollection() {
+            localStorage.removeItem('collection'); // Xóa bộ sưu tập trong localStorage
+            loadCollection(); // Cập nhật lại bộ sưu tập hiển thị (sẽ trống)
+        }
+
+        function rollGacha(type) {
+            if (coins < 10) {
+                alert('Bạn không đủ xu để quay Gacha!');
+                return;
+            }
+
+            const button = type === 'item' ? document.getElementById('item-button') : document.getElementById('trap-button');
+            button.disabled = true;
+
+            coins -= 10;
+            updateCoinsDisplay();
+
+            const resultElement = type === 'item' ? document.getElementById('result-item') : document.getElementById('result-trap');
+            const pool = type === 'item' ? items : traps;
+
+            resultElement.innerHTML = 'Đang tải...';
+
+            setTimeout(() => {
+                const random = Math.random() * 100;
+                let accumulatedChance = 0;
+                let resultItem = null;
+
+                for (const item of pool) {
+                    accumulatedChance += item.chance;
+                    if (random <= accumulatedChance) {
+                        resultItem = item;
+                        break;
+                    }
+                }
+
+                resultElement.innerHTML = `Bạn nhận được: <br><img src="${resultItem.image}" alt="${resultItem.name}" class="${resultItem.name.includes('Legendary') || resultItem.name.includes('Trap Card D') ? 'highlight' : ''}"><br>${resultItem.name}`;
+
+                // Kiểm tra xem vật phẩm đã có trong bộ sưu tập chưa
+                let collection = JSON.parse(localStorage.getItem('collection')) || [];
+                if (!collection.some(existingItem => existingItem.id === resultItem.id)) {
+                    // Nếu chưa có, thêm vào bộ sưu tập
+                    collection.push(resultItem);
+                    localStorage.setItem('collection', JSON.stringify(collection));
+                }
+
+                button.disabled = false;
+            }, 2000);  // Thời gian hiển thị kết quả sau 2 giây
+        }
+
+        function loadCollection() {
+            const collection = JSON.parse(localStorage.getItem('collection')) || [];
+            const collectionContent = document.getElementById('collection-content');
+            collectionContent.innerHTML = ''; // Xóa nội dung cũ
+
+            collection.forEach(item => {
+                const itemBox = document.createElement('div');
+                itemBox.classList.add('item-box');
+                itemBox.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}">
+                    <p>${item.name}</p>
+                `;
+                collectionContent.appendChild(itemBox);
+            });
+        }
+    </script>
+</body>
+</html>
